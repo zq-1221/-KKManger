@@ -11,3 +11,21 @@ export interface HealthRecord {
   sleepHours?: number;
   waterIntake?: number;
 }
+
+export interface AIAdvice {
+  id: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  summary: {
+    avgWeight: number | null;
+    avgSteps: number;
+    avgSleep: number;
+    avgWater: number;
+    weightTrend: 'up' | 'down' | 'stable';
+  };
+  diet: string;
+  exercise: string;
+  sleep: string;
+  rawResponse: string;
+}

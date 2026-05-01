@@ -36,6 +36,15 @@ yarn-error.log*
 # vercel
 .vercel
 
+# superpowers
+.superpowers/
+
+# firecrawl
+.firecrawl
+
+# mcp config (contains API keys)
+.mcp.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
