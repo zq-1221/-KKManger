@@ -24,7 +24,7 @@ export function getAdviceById(id: string): AIAdvice | undefined {
 
 export function saveAdvice(advice: AIAdvice): void {
   const advices = getAdvices();
-  advices.unshift(advice);
+  advices.push(advice);
   advices.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const trimmed = advices.slice(0, MAX_ADVICES);
   if (typeof window !== 'undefined') {

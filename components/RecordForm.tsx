@@ -3,15 +3,12 @@
 import { useState, useEffect } from 'react';
 import { HealthRecord } from '@/types/health';
 import { calcBMI } from '@/lib/bmi';
+import { generateId } from '@/lib/ai';
 
 interface RecordFormProps {
   initialData?: HealthRecord;
   onSubmit: (record: HealthRecord) => void;
   onCancel?: () => void;
-}
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 export default function RecordForm({ initialData, onSubmit, onCancel }: RecordFormProps) {
