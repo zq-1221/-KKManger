@@ -35,10 +35,11 @@ export default function TrendChart({ data, dataKey }: TrendChartProps) {
       date: new Date(r.date).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' }),
     };
     if (isDual) {
+      const hasBoth = r.systolic != null && r.diastolic != null;
       return {
         ...base,
-        systolic: r.systolic ?? null,
-        diastolic: r.diastolic ?? null,
+        systolic: hasBoth ? r.systolic : null,
+        diastolic: hasBoth ? r.diastolic : null,
       };
     }
     return { ...base, value: cfg.getValue(r) ?? null };
@@ -77,7 +78,6 @@ export default function TrendChart({ data, dataKey }: TrendChartProps) {
                 strokeWidth={2}
                 dot={{ r: 4, fill: cfg.color }}
                 activeDot={{ r: 6 }}
-                connectNulls
               />
               <Line
                 type="monotone"
@@ -87,7 +87,6 @@ export default function TrendChart({ data, dataKey }: TrendChartProps) {
                 strokeWidth={2}
                 dot={{ r: 4, fill: cfg.color2 }}
                 activeDot={{ r: 6 }}
-                connectNulls
               />
             </>
           ) : (

@@ -77,8 +77,13 @@ export default function RecordForm({ initialData, onSubmit, onCancel }: RecordFo
             BMI: {bmiPreview}
           </div>
         )}
-        <Field label="收缩压 (mmHg)" value={systolic} onChange={setSystolic} type="number" placeholder="例: 120" />
-        <Field label="舒张压 (mmHg)" value={diastolic} onChange={setDiastolic} type="number" placeholder="例: 80" />
+        <Field label="收缩压/高压 (mmHg)" value={systolic} onChange={setSystolic} type="number" placeholder="例: 120" />
+        <Field label="舒张压/低压 (mmHg)" value={diastolic} onChange={setDiastolic} type="number" placeholder="例: 80" />
+        {(systolic || diastolic) && (
+          <p className="sm:col-span-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+            建议同时填写收缩压和舒张压，单项数据无法生成趋势图
+          </p>
+        )}
         <Field label="心率 (bpm)" value={heartRate} onChange={setHeartRate} type="number" placeholder="例: 72" />
         <Field label="步数" value={steps} onChange={setSteps} type="number" placeholder="例: 8000" />
         <Field label="睡眠 (小时)" value={sleepHours} onChange={setSleepHours} type="number" step="0.1" placeholder="例: 7.5" />
