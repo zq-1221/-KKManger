@@ -1,4 +1,5 @@
 export function calcBMI(weightKg: number, heightCm: number): number {
+  if (!heightCm || heightCm <= 0 || !weightKg || weightKg <= 0) return 0;
   const heightM = heightCm / 100;
   return Math.round((weightKg / (heightM * heightM)) * 10) / 10;
 }
