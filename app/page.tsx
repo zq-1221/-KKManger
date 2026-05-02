@@ -12,7 +12,7 @@ import AdviceCard from '@/components/AdviceCard';
 
 export default function DashboardPage() {
   const [records, setRecords] = useState<HealthRecord[]>([]);
-  const [chartKey, setChartKey] = useState<'weight' | 'steps'>('weight');
+  const [chartKey, setChartKey] = useState<'weight' | 'steps' | 'sleep' | 'bloodPressure'>('weight');
   const [advice, setAdvice] = useState<AIAdvice | null>(null);
   const [adviceStatus, setAdviceStatus] = useState<
     'no-key' | 'insufficient' | 'loading' | 'ready' | 'error'
@@ -153,26 +153,24 @@ export default function DashboardPage() {
       <div className="flex items-center gap-3">
         <h3 className="text-lg font-bold text-gray-800">趋势图</h3>
         <div className="flex bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setChartKey('weight')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-              chartKey === 'weight'
-                ? 'bg-white text-emerald-600 shadow-sm'
-                : 'text-gray-500'
-            }`}
-          >
-            体重
-          </button>
-          <button
-            onClick={() => setChartKey('steps')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-              chartKey === 'steps'
-                ? 'bg-white text-indigo-500 shadow-sm'
-                : 'text-gray-500'
-            }`}
-          >
-            步数
-          </button>
+          {([
+            ['weight', '体重', 'text-emerald-600'],
+            ['steps', '步数', 'text-indigo-500'],
+            ['sleep', '睡眠', 'text-amber-500'],
+            ['bloodPressure', '血压', 'text-red-500'],
+          ] as const).map(([key, label, activeColor]) => (
+            <button
+              key={key}
+              onClick={() => setChartKey(key)}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                chartKey === key
+                  ? `bg-white shadow-sm ${activeColor}`
+                  : 'text-gray-500'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
