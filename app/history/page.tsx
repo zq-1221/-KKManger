@@ -8,14 +8,17 @@ import RecordForm from '@/components/RecordForm';
 export default function HistoryPage() {
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     setRecords(getRecords());
   }, []);
 
-  function handleDelete(id: string) {
-    deleteRecord(id);
+  function handleDeleteConfirm() {
+    if (!deleteConfirmId) return;
+    deleteRecord(deleteConfirmId);
     setRecords(getRecords());
+    setDeleteConfirmId(null);
   }
 
   function handleUpdate(record: HealthRecord) {
@@ -41,6 +44,37 @@ export default function HistoryPage() {
         </div>
       )}
 
+      {deleteConfirmId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+          onClick={() => setDeleteConfirmId(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl p-6 mx-4 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-gray-800 mb-2">确认删除</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              此操作不可撤销，确定要删除这条记录吗？
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="flex-1 py-2.5 text-sm font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors"
+              >
+                确认删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-3">
         {sorted.map((r) => (
           <div key={r.id}>
@@ -62,7 +96,7 @@ export default function HistoryPage() {
                     {editingId === r.id ? '收起' : '编辑'}
                   </button>
                   <button
-                    onClick={() => handleDelete(r.id)}
+                    onClick={() => setDeleteConfirmId(r.id)}
                     className="text-xs text-red-500 hover:text-red-600 font-medium px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 transition-colors"
                   >
                     删除
