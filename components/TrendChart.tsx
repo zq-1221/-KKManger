@@ -19,7 +19,7 @@ interface TrendChartProps {
 const config: Record<TrendChartProps['dataKey'], { label: string; color: string; unit: string; color2?: string; getValue: (r: HealthRecord) => number | null | undefined }> = {
   steps:         { label: '步数', color: '#6366f1', unit: '步',   getValue: (r) => r.steps },
   sleep:         { label: '睡眠', color: '#f59e0b', unit: 'h',    getValue: (r) => r.sleepHours },
-  bloodPressure: { label: '血压', color: '#ef4444', unit: 'mmHg', getValue: (r) => r.systolic ?? r.diastolic, color2: '#3b82f6' },
+  bloodPressure: { label: '血压', color: '#ef4444', unit: 'mmHg', getValue: () => null, color2: '#3b82f6' },
 };
 
 export default function TrendChart({ data, dataKey }: TrendChartProps) {

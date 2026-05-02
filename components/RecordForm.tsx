@@ -79,7 +79,7 @@ export default function RecordForm({ initialData, onSubmit, onCancel }: RecordFo
         )}
         <Field label="收缩压/高压 (mmHg)" value={systolic} onChange={setSystolic} type="number" placeholder="例: 120" />
         <Field label="舒张压/低压 (mmHg)" value={diastolic} onChange={setDiastolic} type="number" placeholder="例: 80" />
-        {(systolic || diastolic) && (
+        {((systolic && !diastolic) || (!systolic && diastolic)) && (
           <p className="sm:col-span-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
             建议同时填写收缩压和舒张压，单项数据无法生成趋势图
           </p>
