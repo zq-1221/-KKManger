@@ -13,11 +13,10 @@ import { HealthRecord } from '@/types/health';
 
 interface TrendChartProps {
   data: HealthRecord[];
-  dataKey: 'weight' | 'steps' | 'sleep' | 'bloodPressure';
+  dataKey: 'steps' | 'sleep' | 'bloodPressure';
 }
 
 const config: Record<TrendChartProps['dataKey'], { label: string; color: string; unit: string; color2?: string; getValue: (r: HealthRecord) => number | null | undefined }> = {
-  weight:        { label: '体重', color: '#10b981', unit: 'kg',   getValue: (r) => r.weight },
   steps:         { label: '步数', color: '#6366f1', unit: '步',   getValue: (r) => r.steps },
   sleep:         { label: '睡眠', color: '#f59e0b', unit: 'h',    getValue: (r) => r.sleepHours },
   bloodPressure: { label: '血压', color: '#ef4444', unit: 'mmHg', getValue: (r) => r.systolic ?? r.diastolic, color2: '#3b82f6' },

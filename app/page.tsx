@@ -12,7 +12,7 @@ import AdviceCard from '@/components/AdviceCard';
 
 export default function DashboardPage() {
   const [records, setRecords] = useState<HealthRecord[]>([]);
-  const [chartKey, setChartKey] = useState<'weight' | 'steps' | 'sleep' | 'bloodPressure'>('weight');
+  const [chartKey, setChartKey] = useState<'steps' | 'sleep' | 'bloodPressure'>('steps');
   const [advice, setAdvice] = useState<AIAdvice | null>(null);
   const [adviceStatus, setAdviceStatus] = useState<
     'no-key' | 'insufficient' | 'loading' | 'ready' | 'error'
@@ -154,7 +154,6 @@ export default function DashboardPage() {
         <h3 className="text-lg font-bold text-gray-800">趋势图</h3>
         <div className="flex bg-gray-100 rounded-lg p-1">
           {([
-            ['weight', '体重', 'text-emerald-600'],
             ['steps', '步数', 'text-indigo-500'],
             ['sleep', '睡眠', 'text-amber-500'],
             ['bloodPressure', '血压', 'text-red-500'],
