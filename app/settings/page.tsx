@@ -1,36 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function SettingsPage() {
-  const [apiKey, setApiKey] = useState('');
-  const [showKey, setShowKey] = useState(false);
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setApiKey(localStorage.getItem('deepseek_api_key') || '');
-    }
-  }, []);
-
-  function handleSave() {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem('deepseek_api_key', apiKey);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
+  const [errorMsg, setErrorMsg] = useState('');
 
   async function handleTest() {
-    if (!apiKey) return;
     setTestStatus('testing');
+    setErrorMsg('');
     try {
       const res = await fetch('/api/advice', {
-        headers: { 'x-api-key': apiKey },
+        headers: { 'Content-Type': 'application/json' },
       });
-      setTestStatus(res.ok ? 'ok' : 'fail');
+      if (res.ok) {
+        setTestStatus('ok');
+      } else {
+        setTestStatus('fail');
+        if (res.status === 401) {
+          setErrorMsg('API Key 未配置');
+        } else {
+          setErrorMsg(`连接失败 (${res.status})`);
+        }
+      }
     } catch {
       setTestStatus('fail');
+      setErrorMsg('网络错误');
     }
   }
 
@@ -44,59 +39,42 @@ export default function SettingsPage() {
       <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
         <h3 className="text-sm font-semibold text-gray-700">DeepSeek API Key</h3>
 
-        <div className="relative">
-          <input
-            type={showKey ? 'text' : 'password'}
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-..."
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm pr-16 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
-          />
-          <button
-            type="button"
-            onClick={() => setShowKey(!showKey)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
-          >
-            {showKey ? '隐藏' : '显示'}
-          </button>
+        <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-2">
+          <p>API Key 存储在服务端，不经过浏览器。</p>
+          <p>
+            在项目根目录的 <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs">.env.local</code> 文件中设置：
+          </p>
+          <pre className="bg-gray-200 rounded-lg px-3 py-2 text-xs text-gray-700 overflow-x-auto">
+            DEEPSEEK_API_KEY=sk-your-key-here
+          </pre>
+          <p>
+            获取 Key：{' '}
+            <a
+              href="https://platform.deepseek.com"
+              target="_blank"
+              className="text-emerald-600 underline"
+            >
+              platform.deepseek.com
+            </a>
+          </p>
         </div>
 
-        <p className="text-xs text-gray-400">
-          API Key 存储在浏览器本地，仅用于调用 AI 接口。<br />
-          获取 Key：{' '}
-          <a
-            href="https://platform.deepseek.com"
-            target="_blank"
-            className="text-emerald-600 underline"
-          >
-            platform.deepseek.com
-          </a>
-        </p>
-
-        <div className="flex gap-3">
-          <button
-            onClick={handleSave}
-            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2.5 rounded-xl transition-colors text-sm"
-          >
-            {saved ? '✓ 已保存' : '保存'}
-          </button>
-          <button
-            onClick={handleTest}
-            disabled={testStatus === 'testing' || !apiKey}
-            className="px-6 py-2.5 text-sm font-medium rounded-xl border border-gray-200 hover:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {testStatus === 'testing' ? '检测中...' : '测试连接'}
-          </button>
-        </div>
+        <button
+          onClick={handleTest}
+          disabled={testStatus === 'testing'}
+          className="w-full py-2.5 text-sm font-medium rounded-xl border border-gray-200 hover:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {testStatus === 'testing' ? '检测中...' : '测试连接'}
+        </button>
 
         {testStatus === 'ok' && (
           <div className="bg-emerald-50 text-emerald-700 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
-            ✓ API Key 有效
+            ✓ API Key 有效，服务正常
           </div>
         )}
         {testStatus === 'fail' && (
           <div className="bg-red-50 text-red-600 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
-            ✗ API Key 无效或连接失败，请检查
+            ✗ {errorMsg || '连接失败，请检查'}
           </div>
         )}
       </div>

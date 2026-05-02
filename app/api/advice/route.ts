@@ -21,10 +21,14 @@ const SYSTEM_PROMPT = `你是一位专业的健康顾问。请分析以下最近
   "sleep": "string"
 }`;
 
+function getApiKey(request: NextRequest): string | null {
+  return process.env.DEEPSEEK_API_KEY || request.headers.get('x-api-key') || null;
+}
+
 export async function POST(request: NextRequest) {
-  const apiKey = request.headers.get('x-api-key');
+  const apiKey = getApiKey(request);
   if (!apiKey) {
-    return NextResponse.json({ error: 'API Key not provided' }, { status: 401 });
+    return NextResponse.json({ error: 'API Key not configured' }, { status: 401 });
   }
 
   let records: Record<string, unknown>[];
@@ -96,9 +100,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const apiKey = request.headers.get('x-api-key');
+  const apiKey = getApiKey(request);
   if (!apiKey) {
-    return NextResponse.json({ error: 'API Key not provided' }, { status: 401 });
+    return NextResponse.json({ error: 'API Key not configured' }, { status: 401 });
   }
   try {
     const res = await fetch(`${DEEPSEEK_BASE}/v1/models`, {

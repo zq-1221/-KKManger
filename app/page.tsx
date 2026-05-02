@@ -28,13 +28,6 @@ export default function DashboardPage() {
   }, []);
 
   const checkAdviceStatus = useCallback((recs?: HealthRecord[]) => {
-    const apiKey =
-      typeof window !== 'undefined' ? localStorage.getItem('deepseek_api_key') : null;
-    if (!apiKey) {
-      setAdviceStatus('no-key');
-      return;
-    }
-
     const existing = getLatestAdvice();
     if (existing) {
       setAdvice(existing);
@@ -52,11 +45,11 @@ export default function DashboardPage() {
 
     if (!existing) {
       setAdviceStatus('loading');
-      generateAdvice(apiKey);
+      generateAdvice(recs);
     }
   }, []);
 
-  async function generateAdvice(apiKey: string) {
+  async function generateAdvice(_recs?: HealthRecord[]) {
     if (generating) return;
     setGenerating(true);
     setAdviceStatus('loading');
@@ -66,12 +59,14 @@ export default function DashboardPage() {
       const recentRecords = getRecent7DaysRecords();
       const res = await fetch('/api/advice', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ records: recentRecords }),
       });
+
+      if (res.status === 401) {
+        setAdviceStatus('no-key');
+        return;
+      }
 
       if (!res.ok) {
         const err = await res.json();
@@ -105,9 +100,7 @@ export default function DashboardPage() {
   }
 
   function handleRetry() {
-    const apiKey =
-      typeof window !== 'undefined' ? localStorage.getItem('deepseek_api_key') : null;
-    if (apiKey) generateAdvice(apiKey);
+    generateAdvice();
   }
 
   const latest = records.length > 0 ? records[records.length - 1] : null;
