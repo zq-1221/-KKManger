@@ -82,7 +82,7 @@ Response:
 - 中文回复，语气温和专业
 - 如果数据不足，坦诚告知并给出通用建议
 
-### `DELETE /api/advice` — 删除现有路由，周报逻辑合并到 `/api/chat` 中
+### 现有 `/api/advice` 路由 → 删除，周报生成逻辑合并到 `/api/chat`
 
 周报生成方式：用户点击"生成周报"快捷按钮，前端发送系统指令消息，API 识别后返回结构化周报。
 
@@ -99,6 +99,7 @@ Response:
 | `app/page.tsx` | 修改 | 移除 AdviceCard 相关状态和渲染 |
 | `lib/chat-storage.ts` | **新建** | 聊天记录 CRUD |
 | `lib/advice-storage.ts` | **保留** | 周报数据仍用此存储 |
+| `lib/ai.ts` | 修改 | 移除 `shouldGenerateAdvice`（不再自动检测7天生成），保留 `getRecent7DaysRecords`、`generateId` |
 
 ## UI 设计
 
