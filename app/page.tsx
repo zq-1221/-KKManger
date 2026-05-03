@@ -5,11 +5,15 @@ import { HealthRecord } from '@/types/health';
 import { getRecords } from '@/lib/storage';
 import { getBMICategory } from '@/lib/bmi';
 import DataCard from '@/components/DataCard';
-import TrendChart from '@/components/TrendChart';
+import ChartCard from '@/components/charts/ChartCard';
+import StepsChart from '@/components/charts/StepsChart';
+import SleepChart from '@/components/charts/SleepChart';
+import BloodPressureChart from '@/components/charts/BloodPressureChart';
+import WeightChart from '@/components/charts/WeightChart';
+import HeartRateChart from '@/components/charts/HeartRateChart';
 
 export default function DashboardPage() {
   const [records, setRecords] = useState<HealthRecord[]>([]);
-  const [chartKey, setChartKey] = useState<'steps' | 'sleep' | 'bloodPressure'>('steps');
 
   useEffect(() => {
     const recs = getRecords();
@@ -55,30 +59,25 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="flex items-center gap-3">
-        <h3 className="text-lg font-bold text-gray-800">趋势图</h3>
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          {([
-            ['steps', '步数', 'text-indigo-500'],
-            ['sleep', '睡眠', 'text-amber-500'],
-            ['bloodPressure', '血压', 'text-red-500'],
-          ] as const).map(([key, label, activeColor]) => (
-            <button
-              key={key}
-              onClick={() => setChartKey(key)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                chartKey === key
-                  ? `bg-white shadow-sm ${activeColor}`
-                  : 'text-gray-500'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <h3 className="text-lg font-bold text-gray-800">趋势图</h3>
 
-      <TrendChart data={records} dataKey={chartKey} />
+      <div className="space-y-4">
+        <ChartCard title="步数趋势" color="#6366f1" unit="步" records={records} getValue={(r) => r.steps}>
+          {(filtered) => <StepsChart records={filtered} />}
+        </ChartCard>
+        <ChartCard title="睡眠趋势" color="#f59e0b" unit="h" records={records} getValue={(r) => r.sleepHours}>
+          {(filtered) => <SleepChart records={filtered} />}
+        </ChartCard>
+        <ChartCard title="血压趋势" color="#ef4444" unit="mmHg" records={records} getValue={(r) => r.systolic ?? r.diastolic ?? null}>
+          {(filtered) => <BloodPressureChart records={filtered} />}
+        </ChartCard>
+        <ChartCard title="体重趋势" color="#10b981" unit="kg" records={records} getValue={(r) => r.weight}>
+          {(filtered) => <WeightChart records={filtered} />}
+        </ChartCard>
+        <ChartCard title="心率趋势" color="#8b5cf6" unit="bpm" records={records} getValue={(r) => r.heartRate}>
+          {(filtered) => <HeartRateChart records={filtered} />}
+        </ChartCard>
+      </div>
     </div>
   );
 }
