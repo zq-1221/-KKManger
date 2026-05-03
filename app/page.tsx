@@ -5,7 +5,7 @@ import { HealthRecord, AIAdvice } from '@/types/health';
 import { getRecords } from '@/lib/storage';
 import { getBMICategory } from '@/lib/bmi';
 import { getLatestAdvice, saveAdvice } from '@/lib/advice-storage';
-import { shouldGenerateAdvice, getRecent7DaysRecords, generateId } from '@/lib/ai';
+import { getRecent7DaysRecords, generateId } from '@/lib/ai';
 import DataCard from '@/components/DataCard';
 import TrendChart from '@/components/TrendChart';
 import AdviceCard from '@/components/AdviceCard';
@@ -24,28 +24,17 @@ export default function DashboardPage() {
   useEffect(() => {
     const recs = getRecords();
     setRecords(recs);
-    checkAdviceStatus(recs);
+    checkAdviceStatus();
   }, []);
 
-  const checkAdviceStatus = useCallback((recs?: HealthRecord[]) => {
+  const checkAdviceStatus = useCallback(() => {
     const existing = getLatestAdvice();
     if (existing) {
       setAdvice(existing);
       setAdviceStatus('ready');
-    }
-
-    const { ready, gap } = shouldGenerateAdvice();
-    if (!ready) {
-      if (!existing) {
-        setAdviceStatus('insufficient');
-        setAdviceGap(gap);
-      }
-      return;
-    }
-
-    if (!existing) {
-      setAdviceStatus('loading');
-      generateAdvice(recs);
+    } else {
+      setAdviceStatus('insufficient');
+      setAdviceGap(7 - getRecent7DaysRecords().length);
     }
   }, []);
 
