@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { ChatMessage, AIAdvice } from '@/types/health';
-import { getRecords } from '@/lib/storage';
-import { getAdvices, saveAdvice } from '@/lib/advice-storage';
+import { saveAdvice } from '@/lib/advice-storage';
 import {
   getCurrentSession,
   saveSession,
@@ -78,7 +77,7 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const records = getRecords();
+      const records = getRecent7DaysRecords();
       const healthContext = buildHealthContext(records);
 
       const res = await fetch('/api/chat', {
@@ -95,6 +94,7 @@ export default function ChatPage() {
 
       if (res.status === 401) {
         setError('API Key 未配置，请在 .env.local 中设置 DEEPSEEK_API_KEY');
+        setMessages(messages);
         return;
       }
       if (!res.ok) {
@@ -134,6 +134,7 @@ export default function ChatPage() {
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : '未知错误');
+      setMessages(messages);
     } finally {
       setLoading(false);
     }
