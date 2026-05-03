@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>康康助手 - AI 健康顾问</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --emerald-50: #ecfdf5;
+    --emerald-100: #d1fae5;
+    --emerald-200: #a7f3d0;
+    --emerald-400: #34d399;
+    --emerald-500: #10b981;
+    --emerald-600: #059669;
+    --emerald-700: #047857;
+    --warm-cream: #fefcf7;
+    --bubble-ai: #f3f4f6;
+    --bubble-user: #10b981;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  /* === App Chrome (matching current project layout) === */
+
+  /* Sticky top header */
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .app-header-inner {
+    max-width: 672px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .app-header .logo {
+    font-size: 28px;
+  }
+  .app-header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #047857;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  /* Page title area */
+  .page-title-area {
+    max-width: 672px;
+    margin: 0 auto;
+    padding: 20px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .page-title-area h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+  .page-title-area .subtitle {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-top: 2px;
+  }
+
+  /* Disclaimer bar */
+  .disclaimer-bar {
+    max-width: 672px;
+    margin: 12px auto 0;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #fffbeb, #fefce8);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 12px;
+    font-size: 12px;
+    color: #92400e;
+    line-height: 1.5;
+  }
+  .disclaimer-bar .info-icon {
+    flex-shrink: 0;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fef3c7;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+
+  /* Quick actions */
+  .quick-actions {
+    max-width: 672px;
+    margin: 12px auto 0;
+    padding: 0 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .quick-pill {
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .quick-pill:hover {
+    border-color: #a7f3d0;
+    background: var(--emerald-50);
+    color: #059669;
+  }
+  .quick-pill.primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  }
+
+  /* === Chat area === */
+  .chat-container {
+    max-width: 672px;
+    margin: 0 auto;
+    padding: 16px 20px 120px; /* bottom padding for fixed input */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 60vh;
+  }
+
+  /* Welcome empty state */
+  .welcome-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    padding: 40px 20px;
+    gap: 20px;
+    min-height: 50vh;
+  }
+  .welcome-avatar {
+    width: 80px; height: 80px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0, #6ee7b7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.18);
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .welcome-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .welcome-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 360px;
+  }
+  .suggestion-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .suggestion-chip {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 13px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+  }
+  .suggestion-chip:hover {
+    border-color: #a7f3d0;
+    background: var(--emerald-50);
+    color: #059669;
+    transform: translateX(4px);
+  }
+  .suggestion-chip .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Messages */
+  .message-row {
+    display: flex;
+    flex-direction: column;
+  }
+  .message-row.user { align-items: flex-end; }
+  .message-row.assistant { align-items: flex-start; }
+
+  .bubble {
+    max-width: 75%;
+    padding: 12px 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    animation: messageIn 0.3s ease-out;
+  }
+  @keyframes messageIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .bubble.user {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border-radius: 20px 20px 4px 20px;
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.2);
+  }
+  .bubble.assistant {
+    background: white;
+    color: var(--text-primary);
+    border-radius: 20px 20px 20px 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #f3f4f6;
+  }
+  .bubble.assistant p { margin: 0 0 6px; }
+  .bubble.assistant p:last-child { margin-bottom: 0; }
+
+  .message-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    padding: 0 8px;
+  }
+
+  /* Weekly report card */
+  .report-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    max-width: 85%;
+    animation: messageIn 0.4s ease-out;
+  }
+  .report-header {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #047857;
+  }
+  .report-body { padding: 16px 20px; }
+  .report-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .report-stat {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+  .report-stat .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  .report-stat .label {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+  }
+  .report-section {
+    padding: 12px 0;
+    border-top: 1px solid #f3f4f6;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #4b5563;
+  }
+  .report-section .section-label {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 14px 20px;
+    background: white;
+    border-radius: 20px 20px 20px 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #f3f4f6;
+    width: fit-content;
+  }
+  .typing-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #d1d5db;
+    animation: typingBounce 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); background: #d1d5db; }
+    30% { transform: translateY(-6px); background: #10b981; }
+  }
+
+  /* === Fixed bottom input === */
+  .input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid #f3f4f6;
+    padding: 12px 20px 20px;
+    z-index: 40;
+  }
+  .input-inner {
+    max-width: 672px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #f9fafb;
+    border-radius: 28px;
+    padding: 10px 10px 10px 20px;
+    border: 1.5px solid #e5e7eb;
+    transition: all 0.2s ease;
+  }
+  .input-wrapper:focus-within {
+    border-color: #a7f3d0;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    background: white;
+  }
+  .input-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+    font-family: inherit;
+  }
+  .input-wrapper input::placeholder { color: #d1d5db; }
+  .send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.3);
+    flex-shrink: 0;
+  }
+  .send-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+  }
+  .send-btn svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+  }
+
+  /* === Bottom nav (matching project NavBar) === */
+  .bottom-nav {
+    display: none; /* hidden in this mockup — input area replaces it for this page */
+  }
+
+  /* === Demo tabs (top-right) === */
+  .demo-tabs {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 6px;
+    z-index: 100;
+  }
+  .demo-tab {
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    transition: all 0.2s ease;
+  }
+  .demo-tab:hover { border-color: #a7f3d0; }
+  .demo-tab.active {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+  }
+
+  /* Smooth scrollbar */
+  .chat-container {
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+  }
+</style>
+</head>
+<body>
+
+<!-- Demo state switcher -->
+<div class="demo-tabs">
+  <button class="demo-tab active" onclick="showState('conversation')">有对话</button>
+  <button class="demo-tab" onclick="showState('empty')">空态</button>
+  <button class="demo-tab" onclick="showState('typing')">AI 回复中</button>
+</div>
+
+<!-- App Header (matches project layout) -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <span class="logo">🩺</span>
+    <h1>康康助手</h1>
+  </div>
+</header>
+
+<!-- Page Title -->
+<div class="page-title-area">
+  <div>
+    <h2>AI 健康顾问</h2>
+    <p class="subtitle">基于您的健康数据，提供个性化分析</p>
+  </div>
+  <span style="font-size:11px;font-weight:500;color:#059669;background:#d1fae5;padding:3px 10px;border-radius:20px;">DeepSeek</span>
+</div>
+
+<!-- Disclaimer -->
+<div class="disclaimer-bar">
+  <span class="info-icon">ℹ️</span>
+  <span>AI 顾问提供的内容仅供参考，不构成医疗诊断。如有严重症状或紧急情况，请及时前往医院就诊。</span>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+  <button class="quick-pill primary">📊 生成周报</button>
+  <button class="quick-pill">💊 分析症状</button>
+  <button class="quick-pill">📋 健康摘要</button>
+</div>
+
+<!-- Chat Area -->
+<div class="chat-container" id="chatContainer">
+
+  <!-- ===== State: Conversation ===== -->
+  <div id="state-conversation">
+
+    <!-- AI greeting -->
+    <div class="message-row assistant">
+      <div class="bubble assistant">
+        您好！我是您的专属健康顾问 🤗<br>
+        您可以告诉我最近的身体状况、不适症状，或让我分析您的健康数据。我会结合您的健康记录给出个性化建议。
+      </div>
+      <span class="message-time">10:32</span>
+    </div>
+
+    <!-- User message -->
+    <div class="message-row user">
+      <div class="bubble user">
+        最近几天总觉得头晕，特别是早上起床的时候，有时候眼前会发黑
+      </div>
+      <span class="message-time">10:33</span>
+    </div>
+
+    <!-- AI response with health data reference -->
+    <div class="message-row assistant">
+      <div class="bubble assistant">
+        <p>了解您的情况。头晕伴随眼前发黑，尤其是晨起时，可能和以下几种情况有关：</p>
+        <p><b>1. 体位性低血压</b> — 起床过猛导致血压短暂下降，大脑供血不足。</p>
+        <p><b>2. 贫血</b> — 血红蛋白偏低，携氧能力下降。</p>
+        <p><b>3. 颈椎问题</b> — 颈椎压迫血管影响脑部供血。</p>
+        <p>我查看了您最近的健康数据：近7天平均收缩压 <b style="color:#059669;">118 mmHg</b>，舒张压 <b style="color:#059669;">76 mmHg</b>，在正常范围内。但平均睡眠只有 <b style="color:#d97706;">5.8 小时</b>，睡眠不足也可能导致晨起头晕。</p>
+        <p><b>💡 建议：</b></p>
+        <p>• 起床时先在床边坐1-2分钟再站立<br>• 增加含铁食物摄入（瘦红肉、菠菜、黑木耳）<br>• 保证每天 7-8 小时睡眠<br>• 如症状持续超过1周，建议就医检查血常规</p>
+      </div>
+      <span class="message-time">10:34</span>
+    </div>
+
+    <!-- User follow-up -->
+    <div class="message-row user">
+      <div class="bubble user">好的，那我该怎么改善睡眠呢？</div>
+      <span class="message-time">10:35</span>
+    </div>
+
+    <!-- AI follow-up with data reference -->
+    <div class="message-row assistant">
+      <div class="bubble assistant">
+        <p>改善睡眠可以从这几方面入手：</p>
+        <p>🌙 <b>睡前习惯</b>：睡前一小时远离手机，可以试试冥想或深呼吸放松</p>
+        <p>☕ <b>饮食调整</b>：下午3点后避免咖啡因，晚餐不要吃太饱</p>
+        <p>🏃 <b>白天运动</b>：您最近日均步数 6,200 步，建议增加到 8,000 步，但睡前2小时避免剧烈运动</p>
+        <p>🕐 <b>固定作息</b>：每天固定时间上床和起床，即使是周末</p>
+      </div>
+      <span class="message-time">10:36</span>
+    </div>
+
+    <!-- Weekly Report Card -->
+    <div class="message-row assistant">
+      <div class="report-card">
+        <div class="report-header">
+          <span>📊</span> 本周健康周报
+          <span style="margin-left:auto;font-weight:400;font-size:12px;color:#6b7280;">4/27 — 5/3</span>
+        </div>
+        <div class="report-body">
+          <div class="report-stats">
+            <div class="report-stat">
+              <div class="value">68.5 <span style="font-size:12px;font-weight:400;">kg</span></div>
+              <div class="label">平均体重</div>
+            </div>
+            <div class="report-stat">
+              <div class="value">7,200</div>
+              <div class="label">日均步数</div>
+            </div>
+            <div class="report-stat">
+              <div class="value">6.2 <span style="font-size:12px;font-weight:400;">h</span></div>
+              <div class="label">平均睡眠</div>
+            </div>
+            <div class="report-stat">
+              <div class="value" style="color:#059669;">↓ 0.3</div>
+              <div class="label">体重趋势</div>
+            </div>
+          </div>
+          <div class="report-section">
+            <span class="section-label">🍽️ 饮食建议</span>
+            <p style="margin:4px 0 0;">体重稳定下降，继续保持当前饮食节奏。建议增加优质蛋白摄入，适当补充富含铁和维生素B12的食物。</p>
+          </div>
+          <div class="report-section">
+            <span class="section-label">🏃 运动建议</span>
+            <p style="margin:4px 0 0;">日均步数较上周提升12%，表现不错。可以尝试每周加入2次力量训练。</p>
+          </div>
+          <div class="report-section">
+            <span class="section-label">😴 作息建议</span>
+            <p style="margin:4px 0 0;">平均睡眠仍低于推荐的7小时，建议将入睡时间提前30分钟。</p>
+          </div>
+        </div>
+      </div>
+      <span class="message-time">10:37</span>
+    </div>
+  </div>
+
+  <!-- ===== State: Empty ===== -->
+  <div id="state-empty" style="display:none;">
+    <div class="welcome-state">
+      <div class="welcome-avatar">🩺</div>
+      <div class="welcome-title">您好，我是您的健康顾问</div>
+      <div class="welcome-subtitle">
+        告诉我您的身体状况或不适症状，我会结合您的健康数据给出个性化分析和建议。
+      </div>
+      <div class="suggestion-chips">
+        <div class="suggestion-chip">
+          <span class="dot" style="background:#f59e0b;"></span>
+          我最近总是头晕、没精神...
+        </div>
+        <div class="suggestion-chip">
+          <span class="dot" style="background:#3b82f6;"></span>
+          帮我分析最近的血压情况
+        </div>
+        <div class="suggestion-chip">
+          <span class="dot" style="background:#8b5cf6;"></span>
+          晚上睡不好怎么办？
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== State: Typing ===== -->
+  <div id="state-typing" style="display:none;">
+    <div class="message-row user">
+      <div class="bubble user">
+        最近几天总觉得头晕，特别是早上起床的时候
+      </div>
+      <span class="message-time">10:33</span>
+    </div>
+    <div class="message-row assistant">
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Fixed Bottom Input -->
+<div class="input-area">
+  <div class="input-inner">
+    <div class="input-wrapper">
+      <input type="text" placeholder="描述您的症状或健康问题..." id="chatInput">
+    </div>
+    <button class="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  function showState(state) {
+    document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.getElementById('state-conversation').style.display = state === 'conversation' ? 'block' : 'none';
+    document.getElementById('state-empty').style.display = state === 'empty' ? 'flex' : 'none';
+    document.getElementById('state-typing').style.display = state === 'typing' ? 'block' : 'none';
+
+    const container = document.getElementById('chatContainer');
+    if (state === 'empty') {
+      document.getElementById('state-empty').style.display = 'flex';
+    }
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    if (!input.value.trim()) return;
+    showState('typing');
+    document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.demo-tab')[2].classList.add('active');
+    input.value = '';
+  }
+
+  document.getElementById('chatInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+</script>
+
+</body>
+</html>
