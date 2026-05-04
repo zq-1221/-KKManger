@@ -1,7 +1,6 @@
-import { getRecords } from '@/lib/storage';
+import { HealthRecord } from '@/types/health';
 
-export function getRecent7DaysRecords() {
-  const records = getRecords();
+export function getRecent7DaysRecords(records: HealthRecord[]) {
   const sorted = [...records].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -21,7 +20,7 @@ export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-export function buildHealthContext(records: ReturnType<typeof getRecords>) {
+export function buildHealthContext(records: HealthRecord[]) {
   if (records.length === 0) return { hasData: false };
 
   const weights = records.filter((r) => r.weight != null).map((r) => r.weight!);

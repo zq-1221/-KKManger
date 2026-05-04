@@ -13,6 +13,8 @@ const tabs = [
 export default function NavBar() {
   const pathname = usePathname();
 
+  if (pathname === '/login' || pathname === '/register') return null;
+
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-t border-gray-100">
       <div className="max-w-2xl mx-auto flex">

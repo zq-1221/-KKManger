@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ChatMessage, AIAdvice } from '@/types/health';
+import { ChatMessage, AIAdvice, HealthRecord } from '@/types/health';
 import { saveAdvice } from '@/lib/advice-storage';
 import {
   getCurrentSession,
@@ -9,6 +9,7 @@ import {
   createSession,
 } from '@/lib/chat-storage';
 import { buildHealthContext, getRecent7DaysRecords, generateId } from '@/lib/ai';
+import { fetchRecords } from '@/lib/api-client';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 export default function ChatPage() {
@@ -17,15 +18,17 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [records, setRecords] = useState<HealthRecord[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load existing session on mount
+  // Load existing session and health records on mount
   useEffect(() => {
     const session = getCurrentSession();
     if (session && session.messages.length > 0) {
       setSessionId(session.id);
       setMessages(session.messages);
     }
+    fetchRecords().then(setRecords).catch(() => {});
   }, []);
 
   // Auto-scroll to bottom
@@ -78,8 +81,8 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const records = getRecent7DaysRecords();
-      const healthContext = buildHealthContext(records);
+      const recentRecords = getRecent7DaysRecords(records);
+      const healthContext = buildHealthContext(recentRecords);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -116,8 +119,8 @@ export default function ChatPage() {
 
       // If weekly report, also save to advice-storage
       if (data.weeklyReport) {
-        const recentRecords = getRecent7DaysRecords();
-        const sorted = [...recentRecords].sort(
+        const recentRecordsForReport = getRecent7DaysRecords(records);
+        const sorted = [...recentRecordsForReport].sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
         const advice: AIAdvice = {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { HealthRecord } from '@/types/health';
-import { getRecords } from '@/lib/storage';
+import { fetchRecords } from '@/lib/api-client';
 import { getBMICategory } from '@/lib/bmi';
 import DataCard from '@/components/DataCard';
 import ChartCard from '@/components/charts/ChartCard';
@@ -14,11 +14,34 @@ import HeartRateChart from '@/components/charts/HeartRateChart';
 
 export default function DashboardPage() {
   const [records, setRecords] = useState<HealthRecord[]>([]);
+  const [migrated, setMigrated] = useState(false);
 
   useEffect(() => {
-    const recs = getRecords();
-    setRecords(recs);
-  }, []);
+    fetchRecords().then(async (serverRecords) => {
+      // Auto-migrate localStorage data on first login
+      if (serverRecords.length === 0 && !migrated) {
+        try {
+          const localRaw = localStorage.getItem('health_records');
+          if (localRaw) {
+            const localRecords = JSON.parse(localRaw);
+            if (Array.isArray(localRecords) && localRecords.length > 0) {
+              await fetch('/api/migrate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ records: localRecords }),
+              });
+              localStorage.removeItem('health_records');
+              setMigrated(true);
+              const migratedRecords = await fetchRecords();
+              setRecords(migratedRecords);
+              return;
+            }
+          }
+        } catch { /* migration failed, continue with empty records */ }
+      }
+      setRecords(serverRecords);
+    }).catch(() => {});
+  }, [migrated]);
 
   const latest = records.length > 0 ? records[records.length - 1] : null;
 

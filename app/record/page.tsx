@@ -2,14 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { HealthRecord } from '@/types/health';
-import { addRecord } from '@/lib/storage';
+import { createRecord } from '@/lib/api-client';
 import RecordForm from '@/components/RecordForm';
 
 export default function RecordPage() {
   const router = useRouter();
 
-  function handleSubmit(record: HealthRecord) {
-    addRecord(record);
+  async function handleSubmit(record: HealthRecord) {
+    await createRecord(record);
     router.push('/');
   }
 

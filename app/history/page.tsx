@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { HealthRecord } from '@/types/health';
-import { getRecords, deleteRecord, updateRecord } from '@/lib/storage';
+import { fetchRecords, deleteRecordById, updateRecord } from '@/lib/api-client';
 import RecordForm from '@/components/RecordForm';
 
 export default function HistoryPage() {
@@ -11,20 +11,22 @@ export default function HistoryPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
-    setRecords(getRecords());
+    fetchRecords().then(setRecords).catch(() => {});
   }, []);
 
   function handleDeleteConfirm() {
     if (!deleteConfirmId) return;
-    deleteRecord(deleteConfirmId);
-    setRecords(getRecords());
-    setDeleteConfirmId(null);
+    deleteRecordById(deleteConfirmId).then(() => {
+      setRecords((prev) => prev.filter((r) => r.id !== deleteConfirmId));
+      setDeleteConfirmId(null);
+    }).catch(() => {});
   }
 
   function handleUpdate(record: HealthRecord) {
-    updateRecord(record.id, record);
-    setRecords(getRecords());
-    setEditingId(null);
+    updateRecord(record.id, record).then((updated) => {
+      setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      setEditingId(null);
+    }).catch(() => {});
   }
 
   const sorted = [...records].sort(
