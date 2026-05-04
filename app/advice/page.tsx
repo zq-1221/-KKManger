@@ -9,6 +9,7 @@ import {
   createSession,
 } from '@/lib/chat-storage';
 import { buildHealthContext, getRecent7DaysRecords, generateId } from '@/lib/ai';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -271,7 +272,11 @@ export default function ChatPage() {
                         : 'bg-white text-gray-800 rounded-[20px_20px_20px_4px] border border-gray-100 shadow-sm'
                     }`}
                   >
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    {msg.role === 'user' ? (
+                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                    ) : (
+                      <MarkdownRenderer content={msg.content} />
+                    )}
                   </div>
                   <span className="text-[11px] text-gray-300 mt-1 px-2">
                     {new Date(msg.createdAt).toLocaleTimeString('zh-CN', {
@@ -347,7 +352,7 @@ function WeeklyReportCard({ content }: { content: string }) {
     return (
       <div className="flex flex-col items-start">
         <div className="max-w-[75%] px-4 py-3 text-sm leading-relaxed bg-white text-gray-800 rounded-[20px_20px_20px_4px] border border-gray-100 shadow-sm">
-          <div className="whitespace-pre-wrap">{content}</div>
+          <MarkdownRenderer content={content} />
         </div>
       </div>
     );
