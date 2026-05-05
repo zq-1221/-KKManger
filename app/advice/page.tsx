@@ -10,9 +10,11 @@ import {
 } from '@/lib/chat-storage';
 import { buildHealthContext, getRecent7DaysRecords, generateId } from '@/lib/ai';
 import { fetchRecords } from '@/lib/api-client';
+import { useAuth } from '@/components/AuthProvider';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 export default function ChatPage() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string>('');
   const [input, setInput] = useState('');
@@ -23,13 +25,14 @@ export default function ChatPage() {
 
   // Load existing session and health records on mount
   useEffect(() => {
-    const session = getCurrentSession();
+    if (!user?.id) return;
+    const session = getCurrentSession(user.id);
     if (session && session.messages.length > 0) {
       setSessionId(session.id);
       setMessages(session.messages);
     }
     fetchRecords().then(setRecords).catch(() => {});
-  }, []);
+  }, [user?.id]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (messages.length === 0) return;
     if (messages.length === prevLenRef.current) return;
+    if (!user?.id) return;
     prevLenRef.current = messages.length;
 
     if (!sessionId) {
@@ -52,16 +56,16 @@ export default function ChatPage() {
       newSession.messages = messages;
       newSession.updatedAt = new Date().toISOString();
       setSessionId(newSession.id);
-      saveSession(newSession);
+      saveSession(user.id, newSession);
     } else {
-      const existing = getCurrentSession();
+      const existing = getCurrentSession(user.id);
       if (existing && existing.id === sessionId) {
         existing.messages = messages;
         existing.updatedAt = new Date().toISOString();
-        saveSession(existing);
+        saveSession(user.id, existing);
       }
     }
-  }, [messages, sessionId]);
+  }, [messages, sessionId, user?.id]);
 
   async function sendMessage(content?: string) {
     const text = content || input.trim();
@@ -134,7 +138,7 @@ export default function ChatPage() {
           sleep: data.weeklyReport.sleep,
           rawResponse: JSON.stringify(data.weeklyReport),
         };
-        saveAdvice(advice);
+        if (user?.id) saveAdvice(user.id, advice);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : '未知错误');

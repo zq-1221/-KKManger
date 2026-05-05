@@ -27,3 +27,24 @@ export function createUser(email: string, passwordHash: string, name: string) {
   if (info.changes === 0) throw new Error('创建用户失败');
   return { id: info.lastInsertRowid as number, email, name };
 }
+
+export function updateUserName(userId: number, name: string) {
+  const db = getDb();
+  const info = db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, userId);
+  db.close();
+  return info.changes > 0;
+}
+
+export function getUserPasswordHash(userId: number): string | null {
+  const db = getDb();
+  const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as { password_hash: string } | undefined;
+  db.close();
+  return row?.password_hash ?? null;
+}
+
+export function updateUserPassword(userId: number, passwordHash: string) {
+  const db = getDb();
+  const info = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, userId);
+  db.close();
+  return info.changes > 0;
+}

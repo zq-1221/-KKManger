@@ -8,6 +8,7 @@ const tabs = [
   { href: '/record', label: '录入', icon: '📝' },
   { href: '/history', label: '历史', icon: '📋' },
   { href: '/advice', label: 'AI 顾问', icon: '🤖' },
+  { href: '/settings', label: '我的', icon: '👤' },
 ];
 
 export default function NavBar() {

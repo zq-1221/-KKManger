@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { clearSessions } from '@/lib/chat-storage';
+import { clearAdvices } from '@/lib/advice-storage';
 
 interface User {
   id: number;
@@ -35,10 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    if (user?.id) {
+      clearSessions(user.id);
+      clearAdvices(user.id);
+    }
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
     router.push('/login');
-  }, [router]);
+  }, [router, user]);
 
   return (
     <AuthContext.Provider value={{ user, loading, logout }}>
