@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, refresh } = useAuth();
   const router = useRouter();
 
   // Edit name state
@@ -54,7 +54,7 @@ export default function SettingsPage() {
         setNameMsg(err.error || '保存失败');
       } else {
         setEditingName(false);
-        window.location.reload(); // refresh to show updated name everywhere
+        await refresh();
       }
     } catch {
       setNameMsg('网络错误');
